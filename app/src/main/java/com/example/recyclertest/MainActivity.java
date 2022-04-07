@@ -1,21 +1,28 @@
 package com.example.recyclertest;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SearchView;
 import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
-    private ArrayList<User> userList;
+    private List<User> userList;
     private RecyclerView recyclerView;
+    RecyclerAdapter recyclerAdapter;
     private RecyclerAdapter.RecyclerViewClickListener listener;
+    SearchView searchView;
+
+    String[] names = {"eden", "john", "grmsh", "rob"};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -23,14 +30,35 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         recyclerView = findViewById(R.id.recyclerView);
         userList = new ArrayList<>();
+        searchView = findViewById(R.id.search_view);
 
-        setUserInfo();
+//        setUserInfo();
         setAdapter();
+
+        for(String s: names) {
+            User user = new User(s);
+            userList.add(user);
+        }
+
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                recyclerAdapter.getFilter().filter(newText);
+                return true;
+            }
+        });
+
     }
+
 
     private void setAdapter() {
         setOnClickListener();
-        RecyclerAdapter recyclerAdapter = new RecyclerAdapter(userList, listener);
+        recyclerAdapter = new RecyclerAdapter(userList, listener);
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getApplicationContext());
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.setItemAnimator(new DefaultItemAnimator());
@@ -42,7 +70,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v, int position) {
                 Intent intent = new Intent(getApplicationContext(), ProfileActivity.class);
-                intent.putExtra("username", userList.get(position).getUsername());
+                intent.putExtra("username", recyclerAdapter.userList.get(position).getUsername());
                 startActivity(intent);
             }
         };
@@ -54,4 +82,5 @@ public class MainActivity extends AppCompatActivity {
         userList.add(new User("grmsh"));
         userList.add(new User("rob"));
     }
+
 }
